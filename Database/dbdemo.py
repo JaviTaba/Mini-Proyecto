@@ -1,27 +1,31 @@
 import sqlite3
+import uuid
 
-# Crear clase Database
-
-#metodo para crear todas las tablas
-
-#metodo para insertar datos en cada tabla
-##recibe argumentos 
-
-conn =  sqlite3.connect('database.db')
-
-cursor = conn.cursor()
-
-cursor.execute('''CREATE TABLE IF NOT EXISTS user_data (
+class Database:
+    def __init__(self, database_name):
+        self.conn = sqlite3.connect(database_name)
+        self.cursor = self.conn.cursor()
+        self.id_count = 0
+    def create_table(self):
+        self.cursor.execute('''CREATE TABLE IF NOT EXISTS user_data (
                 user_id INTEGER AUTO_INCREMENT PRIMARY KEY,
                 firstname VARCHAR(20) NOT NULL,
                 lastname VARCHAR(20) NOT NULL,
                 nickname VARCHAR(15),
                 age INTEGER NOT NULL,
                 email VARCHAR (25) NOT NULL,
-                photo VARCHAR(100)
-                ) ''')
-
-cursor.execute("INSERT INTO user_data VALUES(2,'Lautaro','Pozzo','Lauti', 25, 'lautaropozzo@hotmail.com', 'https://drive.google.com/file/d/10-DWwr6NG1PiXT4Z4F_9PEB2cbzPkYxe/view?usp=share_link')")
-
-cursor.connection.commit()
-cursor.connection.close()
+                photo VARCHAR(100))''')
+        self.conn.commit()
+        
+    def insert_data(self,firstname,lastname,nickname,age,email,photo):
+        self.id_count += 1
+        self.cursor.execute("INSERT INTO user_data (user_id, firstname, lastname, nickname, age, email, photo) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                          (self.id_count,firstname,lastname,nickname,age,email,photo))
+        self.conn.commit()
+        
+    def buscar_datos(self, nombre):
+        self.cursor.execute("SELECT * FROM user_data WHERE nombre=?", (nombre))
+        return self.cursor.fetchall()
+    
+    def cerrar_conexion(self):
+        self.conn.close()
